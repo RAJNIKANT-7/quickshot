@@ -19,9 +19,9 @@ jobs:
           unzip -q QuickShot-source-v1.3.zip -d quickshot-source
           cd quickshot-source
           rm -f quickshot.keystore
-          # This error constant is not available in the Android 33 SDK used by the project.
-          # Keep the generic failure toast so the app builds against its declared SDK.
+          # Android 33 lacks this newer error constant; retain the generic error toast.
           sed -i '/if (code == ERROR_TAKE_SCREENSHOT_SECURE_WINDOW) toast/d' src/com/quickshot/ShotService.java
+          sed -i 's/                    else toast("Screenshot failed/                    toast("Screenshot failed/' src/com/quickshot/ShotService.java
           chmod +x build.sh
       - name: Install Android SDK components
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-33" "build-tools;34.0.0" >/dev/null
