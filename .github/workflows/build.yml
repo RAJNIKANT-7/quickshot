@@ -1,0 +1,35 @@
+name: Build QuickShot APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Extract source archive
+        run: |
+          unzip -q QuickShot-source-v1.3.zip -d quickshot-source
+          cd quickshot-source
+          rm -f quickshot.keystore
+          chmod +x build.sh
+      - name: Install Android SDK components
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-33" "build-tools;34.0.0" >/dev/null
+      - name: Build and verify APK
+        run: |
+          cd quickshot-source
+          ./build.sh
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose QuickShot.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuickShot-apk
+          path: quickshot-source/QuickShot.apk
+          if-no-files-found: error
+          retention-days: 14
